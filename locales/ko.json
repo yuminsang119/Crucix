@@ -1,0 +1,389 @@
+{
+  "meta": {
+    "code": "ko",
+    "name": "Korean",
+    "nativeName": "한국어"
+  },
+  "dashboard": {
+    "title": "CRUCIX — 정보 분석 터미널",
+    "bootTitle": "CRUCIX 정보 분석 엔진",
+    "bootSubtitle": "통합 정보 터미널 · 33 소스",
+    "waitingForSweep": "첫 번째 스캔 대기 중...",
+    "sourcesOk": "소스 정상",
+    "lastSweep": "최근 스캔",
+    "nextSweep": "다음 스캔",
+    "sweep": "스캔",
+    "sources": "소스",
+    "delta": "변화",
+    "highAlert": "긴급 경보",
+    "riskOff": "위험 회피",
+    "riskOn": "위험 선호",
+    "mixed": "혼합",
+    "terminalActive": "터미널 가동 중",
+    "perf": "성능",
+    "perfLow": "절전",
+    "perfHigh": "고성능",
+    "guideBtn": "신호 의미 안내"
+  },
+  "boot": {
+    "initializing": "CRUCIX 엔진 v2.1.0 초기화 중",
+    "connecting": "{count}개 OSINT 소스 연결 중...",
+    "sourceGroup1": "OPENSKY · FIRMS · KIWISDR · MARITIME",
+    "sourceGroup2": "FRED · BLS · EIA · TREASURY · GSCPI",
+    "sourceGroup3": "TELEGRAM · SAFECAST · EPA · WHO · OFAC",
+    "sourceGroup4": "GDELT · NOAA · PATENTS · BLUESKY · REDDIT",
+    "sourceGroup5": "한국재난 · 소셜미디어 · CELESTRAK · COPERNICUS",
+    "sweepComplete": "스캔 완료 — {ok}/{total} 소스",
+    "ok": "정상",
+    "acledLayer": "ACLED 분쟁 레이어",
+    "events": "이벤트",
+    "degraded": "저하됨",
+    "flightCorridors": "항공 회랑",
+    "active": "활성",
+    "dualProjection": "이중 투영",
+    "ready": "준비 완료",
+    "intelligenceSynthesis": "정보 종합 분석"
+  },
+  "panels": {
+    "sensorGrid": "센서 그리드",
+    "tradeIdeas": "분석 아이디어",
+    "osintFeed": "OSINT 피드",
+    "osintStream": "OSINT 스트림",
+    "nuclearWatch": "핵 감시",
+    "newsTicker": "실시간 뉴스",
+    "sweepDelta": "스캔 변화",
+    "macroMarkets": "거시경제 + 시장",
+    "healthAlerts": "보건 경보",
+    "riskGauges": "위험 지표",
+    "crossSourceSignals": "교차 소스 신호",
+    "signalCore": "신호 핵심",
+    "seismicWatch": "지진 감시",
+    "cyberWatch": "사이버 감시",
+    "spaceWatch": "우주 감시",
+    "europeAlerts": "유럽 경보",
+    "ecbIndicators": "ECB 지표",
+    "koreaDisaster": "한국 재난 현황",
+    "socialMedia": "소셜 미디어 모니터링"
+  },
+  "layers": {
+    "airActivity": "항공 활동",
+    "thermalSpikes": "열점 탐지",
+    "sdrCoverage": "SDR 수신",
+    "maritimeWatch": "해양 감시",
+    "nuclearSites": "핵 시설",
+    "conflictEvents": "분쟁 이벤트",
+    "healthWatch": "보건 감시",
+    "worldNews": "세계 뉴스",
+    "osintFeed": "OSINT 피드",
+    "theaters": "주요 지역",
+    "nightDet": "야간 탐지",
+    "online": "온라인",
+    "chokepoints": "주요 해협",
+    "monitors": "모니터",
+    "fatalities": "사망자",
+    "whoAlerts": "WHO 경보",
+    "rssGeolocated": "RSS 위치추적",
+    "earthquakes": "지진",
+    "seismicEvents": "지진 활동",
+    "cyberVulns": "사이버 취약점",
+    "spaceActivity": "우주 활동",
+    "europeEmergency": "유럽 비상",
+    "koreaDisaster": "한국 재난",
+    "koreaFire": "한국 화재/산불",
+    "socialMedia": "소셜 미디어"
+  },
+  "map": {
+    "worldNews": "세계 뉴스",
+    "healthAlert": "보건 경보",
+    "chokepoint": "주요 해협",
+    "nuclearSite": "핵 시설",
+    "osintEvent": "OSINT 이벤트",
+    "thermalDetection": "열점 탐지",
+    "aircraft": "항공기",
+    "rssGeolocated": "RSS 위치추적",
+    "airTraffic": "항공 교통",
+    "thermalFire": "열점/화재",
+    "conflict": "분쟁",
+    "sdrReceiver": "SDR 수신기",
+    "scrollToZoom": "스크롤: 확대/축소 · 드래그: 이동",
+    "globeMode": "지구본 모드",
+    "flatMode": "평면 모드",
+    "earthquake": "지진",
+    "disaster": "재난",
+    "weatherAlert": "기상 경보",
+    "epaRadNet": "EPA RadNet",
+    "spaceStation": "우주 정거장",
+    "gdeltEvent": "GDELT 이벤트",
+    "koreaDisaster": "한국 재난",
+    "koreaFire": "산불/화재",
+    "socialAlert": "소셜 미디어 경보"
+  },
+  "ideas": {
+    "confidence": "신뢰도",
+    "horizon": "기간",
+    "risk": "위험",
+    "signals": "신호",
+    "rationale": "분석 근거",
+    "aiEnhanced": "AI 강화",
+    "llmOff": "LLM 비활성",
+    "pending": "대기 중",
+    "llmNotConfigured": "LLM 미설정",
+    "llmHelp": ".env에 LLM_PROVIDER + 인증정보를 설정하면 AI 분석이 활성화됩니다",
+    "disclosure": "정보 제공 목적으로만 제공됩니다. 이것은 재정적 조언, 매수/매도 권고, 또는 어떠한 종류의 권유가 아닙니다. 모든 신호 기반 관측은 공개 OSINT 데이터에서 파생되며 투자 결정에 의존해서는 안 됩니다."
+  },
+  "regions": {
+    "world": "세계",
+    "americas": "아메리카",
+    "europe": "유럽",
+    "middleEast": "중동",
+    "asiaPacific": "아시아 태평양",
+    "africa": "아프리카",
+    "korea": "대한민국"
+  },
+  "badges": {
+    "radiation": "방사능",
+    "live": "실시간",
+    "delayed": "지연",
+    "items": "항목",
+    "urgent": "긴급",
+    "worldview": "세계 현황",
+    "hotMetrics": "주요 지표",
+    "stress": "위험도",
+    "sweeping": "스캔 중...",
+    "europe": "유럽",
+    "orbital": "궤도",
+    "korea": "대한민국"
+  },
+  "delta": {
+    "baseline": "기준선",
+    "escalation": "격상",
+    "deescalation": "완화",
+    "stable": "안정",
+    "newSignals": "새 신호",
+    "resolved": "해결됨",
+    "noChanges": "최근 스캔 이후 변화 없음",
+    "changes": "변화",
+    "critical": "위험",
+    "new": "신규"
+  },
+  "metrics": {
+    "wtiCrude": "WTI 원유",
+    "brent": "브렌트유",
+    "natGas": "천연가스",
+    "vix": "VIX",
+    "fedFunds": "기준금리",
+    "gscpi": "GSCPI",
+    "cpiMom": "CPI 전월비",
+    "unemployment": "실업률",
+    "hySpread": "HY 스프레드",
+    "usdIndex": "달러 지수",
+    "joblessClaims": "실업수당 청구",
+    "mortgage30y": "30년 모기지",
+    "m2Supply": "M2 통화량",
+    "natDebt": "국가 부채",
+    "wti5day": "WTI 5일",
+    "indexes": "지수",
+    "crypto": "암호화폐",
+    "energyMacro": "에너지 + 거시",
+    "vsPrior": "이전 대비",
+    "ecbRate": "ECB 금리",
+    "eurusd": "EUR/USD",
+    "euM3": "EU M3",
+    "euHicp": "EU HICP",
+    "earthquakes7d": "지진 (7일)",
+    "criticalCves": "위험 CVE",
+    "spaceObjects": "우주 객체",
+    "starlink": "스타링크",
+    "europeAlerts": "EU 경보",
+    "koreaDisasters": "한국 재난",
+    "koreaFires": "한국 화재",
+    "socialAlerts": "소셜 미디어"
+  },
+  "signalMetrics": {
+    "incidentTempo": "사건 빈도",
+    "airTheaters": "항공 주요지역",
+    "thermalSpikes": "열점",
+    "sdrNodes": "SDR 노드",
+    "chokepoints": "주요 해협",
+    "whoAlerts": "WHO 경보"
+  },
+  "nuclear": {
+    "allSitesNormal": "모든 시설 정상",
+    "anomalyDetected": "이상 감지됨",
+    "noData": "데이터 없음"
+  },
+  "seismic": {
+    "noRecentQuakes": "최근 주요 지진 없음",
+    "majorQuake": "주요 지진 감지",
+    "tsunamiRisk": "쓰나미 위험",
+    "mag": "M"
+  },
+  "cyber": {
+    "noAlerts": "위험 CVE 없음",
+    "criticalAlert": "위험 취약점 발견",
+    "cvss": "CVSS",
+    "critical": "위험"
+  },
+  "space": {
+    "noActivity": "정상 활동",
+    "launchDetected": "발사 감지",
+    "objectsTracked": "추적 객체",
+    "newLast30d": "신규 (30일)",
+    "satellites": "위성",
+    "recentLaunches": "최근 발사",
+    "totalTracked": "총 추적",
+    "byCountry": "국가별",
+    "constellations": "위성군",
+    "launches": "발사"
+  },
+  "europe": {
+    "noAlerts": "활성 경보 없음",
+    "activeAlerts": "활성 경보",
+    "fires": "화재",
+    "floods": "홍수",
+    "types": "유형"
+  },
+  "korea": {
+    "disasterAlerts": "재난 문자",
+    "weatherWarnings": "기상 특보",
+    "forestFires": "산불 현황",
+    "thermalDetections": "위성 열점 탐지",
+    "earthquakes": "지진 감지",
+    "socialMonitor": "소셜 미디어 모니터",
+    "criticalAlerts": "긴급 경보",
+    "noAlerts": "현재 경보 없음",
+    "activeAlerts": "활성 경보",
+    "youtube": "YouTube",
+    "xTwitter": "X (Twitter)",
+    "threads": "Threads",
+    "instagram": "Instagram",
+    "totalPosts": "총 게시물",
+    "urgentPosts": "긴급 게시물"
+  },
+  "time": {
+    "justNow": "방금",
+    "hoursAgo": "{hours}시간 전",
+    "daysAgo": "{days}일 전"
+  },
+  "bot": {
+    "commands": {
+      "status": "시스템 상태, 최근 스캔, 소스 상태 확인",
+      "sweep": "수동 스캔 실행",
+      "brief": "최신 정보 요약 브리핑",
+      "portfolio": "포트폴리오 현황 (Alpaca 연결 시)",
+      "alerts": "최근 경보 기록",
+      "mute": "경보 음소거 (기본 1시간, /mute 2h 등)",
+      "unmute": "경보 재개",
+      "help": "사용 가능한 명령어 표시"
+    },
+    "messages": {
+      "alertsMuted": "경보 {hours}시간 동안 음소거 — {time} UTC까지",
+      "useUnmute": "/unmute로 재개할 수 있습니다.",
+      "alertsResumed": "경보가 재개되었습니다.",
+      "sweepTriggered": "수동 스캔이 시작되었습니다. 중요 신호 감지 시 알림을 보내드립니다.",
+      "sweepInProgress": "스캔이 진행 중입니다. 잠시 기다려주세요.",
+      "noDataYet": "아직 데이터가 없습니다 — 첫 스캔 완료 대기 중.",
+      "noRecentAlerts": "최근 경보 없음.",
+      "recentAlerts": "최근 경보 ({count}건)",
+      "commandsTip": "팁: 명령어는 대소문자를 구분하지 않습니다",
+      "commandFailed": "명령 실패: {error}",
+      "portfolioNotAvailable": "포트폴리오 통합은 Alpaca MCP 연결이 필요합니다."
+    },
+    "status": {
+      "title": "CRUCIX 상태",
+      "uptime": "가동 시간",
+      "lastSweep": "최근 스캔",
+      "nextSweep": "다음 스캔",
+      "sweepInProgress": "스캔 진행 중",
+      "yes": "예",
+      "no": "아니오",
+      "sources": "소스",
+      "failed": "실패",
+      "llm": "LLM",
+      "enabled": "활성",
+      "disabled": "비활성",
+      "sseClients": "SSE 클라이언트",
+      "dashboard": "대시보드",
+      "pending": "대기 중",
+      "never": "없음"
+    },
+    "brief": {
+      "title": "CRUCIX 브리핑",
+      "direction": "방향",
+      "changes": "변화",
+      "criticalChanges": "위험",
+      "osint": "OSINT",
+      "urgentSignals": "긴급 신호",
+      "totalPosts": "총 게시물",
+      "topIdeas": "주요 분석"
+    },
+    "alertTiers": {
+      "flash": "긴급",
+      "priority": "우선",
+      "routine": "일반"
+    }
+  },
+  "alerts": {
+    "tiers": {
+      "flash": {
+        "label": "긴급",
+        "description": "즉시 조치 필요 — 시장 영향, 시간 긴박"
+      },
+      "priority": {
+        "label": "우선",
+        "description": "중요 신호 — 수시간 내 대응 필요"
+      },
+      "routine": {
+        "label": "일반",
+        "description": "주목할 변화 — 참고용, 긴급하지 않음"
+      }
+    },
+    "confidence": {
+      "high": "높음",
+      "medium": "보통",
+      "low": "낮음"
+    },
+    "fields": {
+      "direction": "방향",
+      "confidence": "신뢰도",
+      "crossCorrelation": "교차 상관",
+      "action": "행동",
+      "signals": "신호",
+      "monitor": "모니터"
+    },
+    "messages": {
+      "alertsMuted": "경보 음소거",
+      "mutedUntil": "경보 {hours}시간 동안 중지 — {time} UTC까지.",
+      "useUnmuteToResume": "/unmute로 재개하세요.",
+      "alertsResumed": "경보 재개",
+      "willReceiveNext": "다음 신호 평가를 수신합니다."
+    },
+    "ruleBasedHeadlines": {
+      "nuclearAnomaly": "핵 이상 감지",
+      "crossDomainSignals": "{count}건 위험 교차도메인 신호",
+      "escalatingSignals": "{count}건 격상 신호",
+      "osintSurge": "OSINT 급증: {count}건 긴급 게시물",
+      "signalChangeDetected": "신호 변화 감지"
+    }
+  },
+  "discord": {
+    "commands": {
+      "status": "시스템 상태, 최근 스캔, 소스 상태",
+      "sweep": "수동 스캔 실행",
+      "brief": "정보 요약 브리핑",
+      "portfolio": "포트폴리오 상태 (Alpaca 연결 시)",
+      "alerts": "최근 경보 기록",
+      "mute": "경보 음소거 (기본 1시간)",
+      "unmute": "경보 재개",
+      "muteHoursOption": "음소거 시간 (기본: 1)"
+    }
+  },
+  "llm": {
+    "systemPrompt": "당신은 거시 정보 분석 기업의 정량 분석가입니다. 27개 이상의 소스에서 수집된 OSINT + 경제 데이터를 받아 5-8개의 실행 가능한 분석 아이디어를 생성합니다.\n\n규칙:\n- 각 아이디어는 입력 데이터의 구체적인 데이터 포인트를 인용해야 합니다\n- 진입 근거, 위험 요소, 시간 범위를 포함하세요\n- 지정학적, 경제적, 시장 신호를 교차 분석하세요\n- 구체적으로: 티커, 선물, ETF 등 상품명을 명시하세요\n- 델타에서 중요 변화가 있으면 그것부터 시작하세요\n- 신뢰도 평가: HIGH (다수 확인 신호), MEDIUM (지지되는 논제), LOW (추측)\n\n유효한 JSON 배열만 출력하세요. 각 객체:\n{\n  \"title\": \"짧은 제목 (최대 10단어)\",\n  \"type\": \"LONG|SHORT|HEDGE|WATCH|AVOID\",\n  \"ticker\": \"주요 상품\",\n  \"confidence\": \"HIGH|MEDIUM|LOW\",\n  \"rationale\": \"2-3문장 설명 (구체적 데이터 인용)\",\n  \"risk\": \"주요 위험 요소\",\n  \"horizon\": \"Intraday|Days|Weeks|Months\",\n  \"signals\": [\"signal1\", \"signal2\"]\n}"
+  },
+  "api": {
+    "errors": {
+      "noDataYet": "데이터 없음 — 첫 스캔 진행 중"
+    }
+  }
+}

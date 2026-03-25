@@ -30,6 +30,14 @@ const geoKeywords = {
   'Israel':[31.5,35],'Gaza':[31.4,34.4],'Palestine':[31.9,35.2],
   'Syria':[35,38],'Iraq':[33,44],'Saudi':[24,45],'Yemen':[15,48],'Lebanon':[34,36],
   'India':[20,78],'Japan':[36,138],'Korea':[37,127],'Pyongyang':[39,125.7],
+  'Seoul':[37.57,126.98],'Busan':[35.18,129.08],'Incheon':[37.46,126.71],
+  'Daegu':[35.87,128.60],'Daejeon':[36.35,127.38],'Gwangju':[35.16,126.85],
+  'Ulsan':[35.54,129.31],'Jeju':[33.50,126.53],
+  '\uc11c\uc6b8':[37.57,126.98],'\ubd80\uc0b0':[35.18,129.08],'\ub300\uad6c':[35.87,128.60],'\uc778\ucc9c':[37.46,126.71],
+  '\uad11\uc8fc':[35.16,126.85],'\ub300\uc804':[36.35,127.38],'\uc6b8\uc0b0':[35.54,129.31],'\uc138\uc885':[36.48,127.00],
+  '\uacbd\uae30':[37.28,127.01],'\uac15\uc6d0':[37.82,128.16],'\ucda9\ubd81':[36.64,127.49],'\ucda9\ub0a8':[36.66,126.67],
+  '\uc804\ubd81':[35.82,127.11],'\uc804\ub0a8':[34.82,126.46],'\uacbd\ubd81':[36.49,128.89],'\uacbd\ub0a8':[35.46,128.21],
+  '\uc81c\uc8fc':[33.50,126.53],'\ud55c\uad6d':[36.5,127.8],
   'Taiwan':[23.5,121],'Philippines':[13,122],'Myanmar':[20,96],
   'Canada':[56,-96],'Mexico':[23,-102],'Brazil':[-14,-51],'Argentina':[-38,-63],
   'Colombia':[4,-74],'Venezuela':[7,-66],'Cuba':[22,-80],'Chile':[-35,-71],
@@ -171,9 +179,13 @@ const RSS_SOURCE_FALLBACKS = {
   'SBS Australia': { lat: -35.2809, lon: 149.13, region: 'Australia' },
   'Indian Express': { lat: 28.6139, lon: 77.209, region: 'India' },
   'The Hindu': { lat: 13.0827, lon: 80.2707, region: 'India' },
-  'MercoPress': { lat: -34.9011, lon: -56.1645, region: 'South America' }
+  'MercoPress': { lat: -34.9011, lon: -56.1645, region: 'South America' },
+  'Korea Herald': { lat: 37.5665, lon: 126.978, region: 'Korea' },
+  'Yonhap': { lat: 37.5665, lon: 126.978, region: 'Korea' },
+  'KBS World': { lat: 37.5665, lon: 126.978, region: 'Korea' },
+  'JoongAng Daily': { lat: 37.5665, lon: 126.978, region: 'Korea' },
 };
-const REGIONAL_NEWS_SOURCES = ['MercoPress', 'Indian Express', 'The Hindu', 'SBS Australia'];
+const REGIONAL_NEWS_SOURCES = ['MercoPress', 'Indian Express', 'The Hindu', 'SBS Australia', 'Korea Herald', 'Yonhap', 'KBS World', 'JoongAng Daily'];
 
 export async function fetchAllNews() {
   const feeds = [
@@ -203,6 +215,11 @@ export async function fetchAllNews() {
     ['https://www.thehindu.com/news/national/feeder/default.rss', 'The Hindu'],
     // South America
     ['https://en.mercopress.com/rss/latin-america', 'MercoPress'],
+    // Korea (한국)
+    ['https://www.koreaherald.com/rss', 'Korea Herald'],
+    ['https://en.yna.co.kr/RSS/news.xml', 'Yonhap'],
+    ['https://world.kbs.co.kr/rss/rss_news.htm?lang=e', 'KBS World'],
+    ['https://www.koreajoongangdaily.joins.com/xmlFile/rss_joins', 'JoongAng Daily'],
   ];
 
   const results = await Promise.allSettled(
