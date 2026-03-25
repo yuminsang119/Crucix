@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Crucix Intelligence Engine — Dev Server
-// Serves the Jarvis dashboard, runs sweep cycle, pushes live updates via SSE
+// Crucix Fire Control Room — Server
+// Serves the dashboard, runs sweep cycle, processes 119 calls, pushes live updates via SSE
 
 import express from 'express';
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
@@ -16,6 +16,13 @@ import { createLLMProvider } from './lib/llm/index.mjs';
 import { generateLLMIdeas } from './lib/llm/ideas.mjs';
 import { TelegramAlerter } from './lib/alerts/telegram.mjs';
 import { DiscordAlerter } from './lib/alerts/discord.mjs';
+// Fire control room modules
+import { TrackManager } from './lib/ontology/tracker.mjs';
+import { createSTTProvider } from './lib/stt/index.mjs';
+import { extractCallInfo } from './lib/stt/extractor.mjs';
+import { scoreCall } from './lib/stt/scorer.mjs';
+import { geocodeAddress, isGeocoderConfigured } from './lib/geo/geocoder.mjs';
+import { AddressVectorStore } from './lib/geo/vectorstore.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = __dirname;
@@ -38,12 +45,19 @@ const sseClients = new Set();
 // === Delta/Memory ===
 const memory = new MemoryManager(RUNS_DIR);
 
-// === LLM + Telegram + Discord ===
+// === LLM + STT + Telegram + Discord + Ontology ===
 const llmProvider = createLLMProvider(config.llm);
+const sttProvider = createSTTProvider(config.stt);
 const telegramAlerter = new TelegramAlerter(config.telegram);
 const discordAlerter = new DiscordAlerter(config.discord || {});
+const trackManager = new TrackManager(config.ontology || {});
+const addressStore = new AddressVectorStore();
+let processedCalls = []; // 119 calls processed in current session
 
 if (llmProvider) console.log(`[Crucix] LLM enabled: ${llmProvider.name} (${llmProvider.model})`);
+if (sttProvider?.isConfigured) console.log(`[Crucix] STT enabled: ${sttProvider.name}`);
+if (isGeocoderConfigured(config.geo)) console.log('[Crucix] Geocoding enabled');
+console.log(`[Crucix] Track Manager: auto-escalate ${config.ontology?.autoEscalateMinutes || 10}min, max track age ${config.ontology?.maxTrackAgeMinutes || 480}min`);
 if (telegramAlerter.isConfigured) {
   console.log('[Crucix] Telegram alerts enabled');
 
@@ -304,6 +318,203 @@ function broadcast(data) {
   }
 }
 
+// === 119 Emergency Call Processing Pipeline ===
+
+// POST /api/119/transcript — process text transcript from 119 call
+app.use(express.json({ limit: '1mb' }));
+app.post('/api/119/transcript', async (req, res) => {
+  try {
+    const { transcript, metadata } = req.body;
+    if (!transcript) return res.status(400).json({ error: 'transcript is required' });
+
+    const result = await process119Transcript(transcript, metadata);
+    res.json(result);
+  } catch (err) {
+    console.error('[119] Transcript processing failed:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/119/call — process audio file from 119 call
+app.post('/api/119/call', async (req, res) => {
+  if (!sttProvider?.isConfigured) {
+    return res.status(503).json({ error: 'STT not configured — set STT_PROVIDER in .env' });
+  }
+
+  try {
+    // Collect raw body as buffer
+    const chunks = [];
+    for await (const chunk of req) chunks.push(chunk);
+    const audioBuffer = Buffer.concat(chunks);
+
+    if (audioBuffer.length === 0) {
+      return res.status(400).json({ error: 'No audio data received' });
+    }
+
+    // 1. STT: audio → text
+    console.log(`[119] Processing audio call (${(audioBuffer.length / 1024).toFixed(1)}KB)...`);
+    const sttResult = await sttProvider.transcribe(audioBuffer, {
+      language: 'ko',
+      format: req.headers['content-type']?.includes('wav') ? 'wav' : 'mp3',
+    });
+
+    if (!sttResult?.text) {
+      return res.status(422).json({ error: 'STT returned empty transcript' });
+    }
+
+    console.log(`[119] STT complete: "${sttResult.text.substring(0, 80)}..." (${sttResult.duration}s)`);
+
+    // 2. Run the rest of the pipeline with the transcript
+    const result = await process119Transcript(sttResult.text, {
+      ...req.body,
+      sttDuration: sttResult.duration,
+      sttSegments: sttResult.segments,
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error('[119] Audio call processing failed:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/119/calls — list processed 119 calls
+app.get('/api/119/calls', (req, res) => {
+  res.json({
+    total: processedCalls.length,
+    calls: processedCalls.slice(-50).reverse(), // Latest 50
+  });
+});
+
+// GET /api/incidents — list all tracked incidents
+app.get('/api/incidents', (req, res) => {
+  res.json(trackManager.toJSON());
+});
+
+// GET /api/incident/:id — get specific incident
+app.get('/api/incident/:id', (req, res) => {
+  const track = trackManager.getTrack(req.params.id);
+  if (!track) return res.status(404).json({ error: 'Incident not found' });
+  res.json(track.toJSON());
+});
+
+/**
+ * Core 119 transcript processing pipeline
+ * STT (optional) → NLP extraction → geocoding → vector matching → scoring → tracking
+ */
+async function process119Transcript(transcript, metadata = {}) {
+  const startMs = Date.now();
+
+  // 1. NLP: extract address, incident type, severity from transcript
+  const extracted = await extractCallInfo(transcript, llmProvider);
+  console.log(`[119] Extracted: type=${extracted.incidentType}, addr="${extracted.address || 'N/A'}", severity=[${extracted.severityIndicators.join(',')}]`);
+
+  // 2. Geocode: address → coordinates
+  let geocodeResult = null;
+  if (extracted.address && isGeocoderConfigured(config.geo)) {
+    geocodeResult = await geocodeAddress(extracted.address, config.geo);
+    if (geocodeResult) {
+      console.log(`[119] Geocoded: ${geocodeResult.lat}, ${geocodeResult.lon} (${geocodeResult.provider}, conf=${geocodeResult.confidence})`);
+    }
+  }
+
+  // 3. Vector matching: fuzzy match against known locations
+  let vectorMatches = [];
+  if (extracted.address && addressStore.loaded) {
+    vectorMatches = addressStore.findNearest(extracted.address, 3, 0.3);
+    if (vectorMatches.length > 0) {
+      console.log(`[119] Vector match: "${vectorMatches[0].name}" (sim=${vectorMatches[0].similarity.toFixed(2)})`);
+      // If no geocode result, use vector match coordinates
+      if (!geocodeResult && vectorMatches[0].lat) {
+        geocodeResult = {
+          lat: vectorMatches[0].lat,
+          lon: vectorMatches[0].lon,
+          confidence: vectorMatches[0].similarity * 0.7, // Lower confidence for fuzzy match
+          provider: 'vector-match',
+        };
+      }
+    }
+  }
+
+  // 4. Score: calculate priority based on all available context
+  const scoreResult = scoreCall(extracted, {
+    geocodeResult,
+    weather: currentData?.weather || null,
+    hazmatFacilities: currentData?.hazmatFacilities || [],
+    vulnerableFacilities: currentData?.vulnerableFacilities || [],
+    callerCount: metadata.callerCount || 1,
+  });
+
+  console.log(`[119] Score: ${scoreResult.score}/100 → ${scoreResult.priority}`);
+
+  // 5. Create/update incident track
+  let incident = null;
+  if (geocodeResult?.lat) {
+    const trackResult = trackManager.processSignals([{
+      centroid: { lat: geocodeResult.lat, lon: geocodeResult.lon },
+      confidence: geocodeResult.confidence || 0.5,
+      sourceCount: 1,
+      sources: ['119-STT'],
+      signalCount: 1,
+      signals: [{
+        source: '119',
+        location: { lat: geocodeResult.lat, lon: geocodeResult.lon },
+        timestamp: Date.now(),
+        hasGeoTag: true,
+        data: { transcript, extracted, scoreResult },
+      }],
+      latestTimestamp: Date.now(),
+    }]);
+
+    incident = trackResult.created[0] || trackResult.updated[0] || null;
+    if (incident) {
+      incident.props.callerCount = (incident.props.callerCount || 0) + 1;
+      incident.addTimelineEvent(`119 신고 접수 (${scoreResult.priority})`, {
+        transcript: transcript.substring(0, 200),
+        score: scoreResult.score,
+        priority: scoreResult.priority,
+        address: extracted.address,
+      });
+    }
+  }
+
+  // 6. Build result
+  const result = {
+    callId: `CALL-${Date.now()}`,
+    incidentId: incident?.id || null,
+    timestamp: new Date().toISOString(),
+    processingMs: Date.now() - startMs,
+    transcript,
+    extracted,
+    geocodeResult,
+    vectorMatches,
+    score: scoreResult,
+    incidentState: incident?.props?.state || null,
+    metadata,
+  };
+
+  // Save to processed calls list
+  processedCalls.push(result);
+  if (processedCalls.length > 500) processedCalls = processedCalls.slice(-500);
+
+  // 7. Broadcast to dashboard via SSE
+  broadcast({
+    type: '119-call',
+    data: result,
+    incidents: trackManager.toJSON(),
+  });
+
+  // 8. Alert via Telegram/Discord for high-priority calls
+  if (scoreResult.score >= 60 && (telegramAlerter.isConfigured || discordAlerter.isConfigured)) {
+    const alertMsg = `🚨 *119 신고* [${scoreResult.priority}]\n점수: ${scoreResult.score}/100\n유형: ${extracted.incidentType}\n주소: ${extracted.address || '미확인'}\n${incident ? `사건ID: ${incident.id}` : ''}`;
+    if (telegramAlerter.isConfigured) {
+      telegramAlerter.sendMessage(alertMsg).catch(e => console.error('[119 Alert] Telegram:', e.message));
+    }
+  }
+
+  return result;
+}
+
 // === Sweep Cycle ===
 async function runSweepCycle() {
   if (sweepInProgress) {
@@ -375,9 +586,50 @@ async function runSweepCycle() {
     // Prune old alerted signals
     memory.pruneAlertedSignals();
 
+    // 7. Update address vector store with known locations from sweep
+    try {
+      const locations = [];
+      const e119 = rawData.sources?.Emergency119;
+      if (e119?.hazmatFacilities?.facilities) {
+        for (const f of e119.hazmatFacilities.facilities) {
+          if (f.lat && f.lon) locations.push({ name: f.name, address: f.address, lat: f.lat, lon: f.lon, type: 'hazmat' });
+        }
+      }
+      if (e119?.hospitals?.hospitals) {
+        for (const h of e119.hospitals.hospitals) {
+          if (h.lat && h.lon) locations.push({ name: h.name, address: h.address, lat: h.lat, lon: h.lon, type: 'hospital' });
+        }
+      }
+      if (e119?.waterSupply?.hydrants) {
+        for (const h of e119.waterSupply.hydrants) {
+          if (h.lat && h.lon) locations.push({ name: h.type, address: h.address, lat: h.lat, lon: h.lon, type: 'hydrant' });
+        }
+      }
+      if (locations.length > 0) {
+        const loaded = addressStore.load(locations);
+        console.log(`[Crucix] Address vector store: ${loaded} locations indexed`);
+      }
+    } catch (e) {
+      console.error('[Crucix] Address store update failed (non-fatal):', e.message);
+    }
+
+    // 8. Track manager: check escalations + cleanup
+    const escalated = trackManager.checkEscalations();
+    if (escalated.length > 0) {
+      console.log(`[Crucix] Auto-escalated ${escalated.length} incidents`);
+      for (const track of escalated) {
+        broadcast({ type: 'incident-escalated', data: track.toJSON() });
+      }
+    }
+    trackManager.cleanupOldTracks();
+
+    // Attach incident tracker data to synthesized output
+    synthesized.incidents = trackManager.toJSON();
+    synthesized.processedCalls = processedCalls.slice(-20);
+
     currentData = synthesized;
 
-    // 6. Push to all connected browsers
+    // 9. Push to all connected browsers
     broadcast({ type: 'update', data: currentData });
 
     console.log(`[Crucix] Sweep complete — ${currentData.meta.sourcesOk}/${currentData.meta.sourcesQueried} sources OK`);
@@ -399,15 +651,18 @@ async function start() {
 
   console.log(`
   ╔══════════════════════════════════════════════╗
-  ║           CRUCIX INTELLIGENCE ENGINE         ║
-  ║          Local Palantir · 26 Sources         ║
+  ║         CRUCIX FIRE CONTROL ROOM             ║
+  ║       Ontology + Fusion · 16 Sources         ║
   ╠══════════════════════════════════════════════╣
   ║  Dashboard:  http://localhost:${port}${' '.repeat(14 - String(port).length)}║
   ║  Health:     http://localhost:${port}/api/health${' '.repeat(4 - String(port).length)}║
+  ║  119 Call:   POST /api/119/call              ║
+  ║  119 Text:   POST /api/119/transcript        ║
+  ║  Incidents:  GET /api/incidents              ║
   ║  Refresh:    Every ${config.refreshIntervalMinutes} min${' '.repeat(20 - String(config.refreshIntervalMinutes).length)}║
   ║  LLM:        ${(config.llm.provider || 'disabled').padEnd(31)}║
-  ║  Telegram:   ${config.telegram.botToken ? 'enabled' : 'disabled'}${' '.repeat(config.telegram.botToken ? 24 : 23)}║
-  ║  Discord:    ${config.discord?.botToken ? 'enabled' : config.discord?.webhookUrl ? 'webhook only' : 'disabled'}${' '.repeat(config.discord?.botToken ? 24 : config.discord?.webhookUrl ? 20 : 23)}║
+  ║  STT:        ${(config.stt?.provider || 'disabled').padEnd(31)}║
+  ║  Geocoder:   ${(isGeocoderConfigured(config.geo) ? 'enabled' : 'disabled').padEnd(31)}║
   ╚══════════════════════════════════════════════╝
   `);
 
