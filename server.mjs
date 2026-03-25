@@ -99,48 +99,43 @@ if (telegramAlerter.isConfigured) {
   telegramAlerter.onCommand('/brief', async () => {
     if (!currentData) return '⏳ No data yet — waiting for first sweep to complete.';
 
-    const tg = currentData.tg || {};
-    const energy = currentData.energy || {};
+    const weather = currentData.weather || {};
+    const fireRisk = currentData.fireRisk || {};
     const delta = memory.getLastDelta();
     const ideas = (currentData.ideas || []).slice(0, 3);
+    const incidents = trackManager.getActiveTracks();
 
     const sections = [
-      `📋 *CRUCIX BRIEF*`,
+      `🚒 *소방 상황 브리핑*`,
       `_${new Date().toISOString().replace('T', ' ').substring(0, 19)} UTC_`,
       ``,
     ];
 
-    // Delta direction
     if (delta?.summary) {
-      const dirEmoji = { 'risk-off': '📉', 'risk-on': '📈', 'mixed': '↔️' }[delta.summary.direction] || '↔️';
-      sections.push(`${dirEmoji} Direction: *${delta.summary.direction.toUpperCase()}* | ${delta.summary.totalChanges} changes, ${delta.summary.criticalChanges} critical`);
+      const dirEmoji = { 'risk-off': '✅', 'risk-on': '🔴', 'mixed': '🟡' }[delta.summary.direction] || '🟡';
+      sections.push(`${dirEmoji} 상황: *${delta.summary.direction.toUpperCase()}* | ${delta.summary.totalChanges} 변화, ${delta.summary.criticalChanges} 위험`);
       sections.push('');
     }
 
-    // Key metrics
-    const vix = currentData.fred?.find(f => f.id === 'VIXCLS');
-    const hy = currentData.fred?.find(f => f.id === 'BAMLH0A0HYM2');
-    if (vix || energy.wti) {
-      sections.push(`📊 VIX: ${vix?.value || '--'} | WTI: $${energy.wti || '--'} | Brent: $${energy.brent || '--'}`);
-      if (hy) sections.push(`   HY Spread: ${hy.value} | NatGas: $${energy.natgas || '--'}`);
+    if (weather.temperature !== null || weather.windSpeed !== null) {
+      sections.push(`🌡 기상: ${weather.temperature ?? '--'}°C | 습도 ${weather.humidity ?? '--'}% | 풍속 ${weather.windSpeed ?? '--'}m/s`);
+      if (weather.fireWeatherRiskLabel) sections.push(`   화재기상: ${weather.fireWeatherRiskLabel}`);
       sections.push('');
     }
 
-    // OSINT
-    if (tg.urgent?.length > 0) {
-      sections.push(`📡 OSINT: ${tg.urgent.length} urgent signals, ${tg.posts || 0} total posts`);
-      // Top 2 urgent
-      for (const p of tg.urgent.slice(0, 2)) {
-        sections.push(`  • ${(p.text || '').substring(0, 80)}`);
+    if (incidents.length > 0) {
+      sections.push(`🔥 활성 사건: ${incidents.length}건`);
+      for (const inc of incidents.slice(0, 3)) {
+        sections.push(`  • ${inc.id} [${inc.props.state}]`);
       }
       sections.push('');
     }
 
-    // Top ideas
     if (ideas.length > 0) {
-      sections.push(`💡 *Top Ideas:*`);
+      sections.push(`🚒 *대응 전략:*`);
       for (const idea of ideas) {
-        sections.push(`  ${idea.type === 'long' ? '📈' : idea.type === 'hedge' ? '🛡️' : '👁️'} ${idea.title}`);
+        const icon = { DISPATCH: '🚒', EVACUATE: '🚪', REINFORCE: '📢', MONITOR: '👁️' }[idea.type] || '📋';
+        sections.push(`  ${icon} ${idea.title}`);
       }
     }
 
@@ -194,38 +189,37 @@ if (discordAlerter.isConfigured) {
   discordAlerter.onCommand('brief', async () => {
     if (!currentData) return '⏳ No data yet — waiting for first sweep to complete.';
 
-    const tg = currentData.tg || {};
-    const energy = currentData.energy || {};
+    const weather = currentData.weather || {};
     const delta = memory.getLastDelta();
     const ideas = (currentData.ideas || []).slice(0, 3);
+    const incidents = trackManager.getActiveTracks();
 
-    const sections = [`**📋 CRUCIX BRIEF**\n_${new Date().toISOString().replace('T', ' ').substring(0, 19)} UTC_\n`];
+    const sections = [`**🚒 소방 상황 브리핑**\n_${new Date().toISOString().replace('T', ' ').substring(0, 19)} UTC_\n`];
 
     if (delta?.summary) {
-      const dirEmoji = { 'risk-off': '📉', 'risk-on': '📈', 'mixed': '↔️' }[delta.summary.direction] || '↔️';
-      sections.push(`${dirEmoji} Direction: **${delta.summary.direction.toUpperCase()}** | ${delta.summary.totalChanges} changes, ${delta.summary.criticalChanges} critical\n`);
+      const dirEmoji = { 'risk-off': '✅', 'risk-on': '🔴', 'mixed': '🟡' }[delta.summary.direction] || '🟡';
+      sections.push(`${dirEmoji} 상황: **${delta.summary.direction.toUpperCase()}** | ${delta.summary.totalChanges} 변화, ${delta.summary.criticalChanges} 위험\n`);
     }
 
-    const vix = currentData.fred?.find(f => f.id === 'VIXCLS');
-    const hy = currentData.fred?.find(f => f.id === 'BAMLH0A0HYM2');
-    if (vix || energy.wti) {
-      sections.push(`📊 VIX: ${vix?.value || '--'} | WTI: $${energy.wti || '--'} | Brent: $${energy.brent || '--'}`);
-      if (hy) sections.push(`   HY Spread: ${hy.value} | NatGas: $${energy.natgas || '--'}`);
+    if (weather.temperature !== null || weather.windSpeed !== null) {
+      sections.push(`🌡 기상: ${weather.temperature ?? '--'}°C | 습도 ${weather.humidity ?? '--'}% | 풍속 ${weather.windSpeed ?? '--'}m/s`);
+      if (weather.fireWeatherRiskLabel) sections.push(`   화재기상: ${weather.fireWeatherRiskLabel}`);
       sections.push('');
     }
 
-    if (tg.urgent?.length > 0) {
-      sections.push(`📡 OSINT: ${tg.urgent.length} urgent signals, ${tg.posts || 0} total posts`);
-      for (const p of tg.urgent.slice(0, 2)) {
-        sections.push(`  • ${(p.text || '').substring(0, 80)}`);
+    if (incidents.length > 0) {
+      sections.push(`🔥 활성 사건: ${incidents.length}건`);
+      for (const inc of incidents.slice(0, 3)) {
+        sections.push(`  • ${inc.id} [${inc.props.state}]`);
       }
       sections.push('');
     }
 
     if (ideas.length > 0) {
-      sections.push(`**💡 Top Ideas:**`);
+      sections.push(`**🚒 대응 전략:**`);
       for (const idea of ideas) {
-        sections.push(`  ${idea.type === 'long' ? '📈' : idea.type === 'hedge' ? '🛡️' : '👁️'} ${idea.title}`);
+        const icon = { DISPATCH: '🚒', EVACUATE: '🚪', REINFORCE: '📢', MONITOR: '👁️' }[idea.type] || '📋';
+        sections.push(`  ${icon} ${idea.title}`);
       }
     }
 
@@ -284,9 +278,17 @@ app.get('/api/health', (req, res) => {
     sourcesFailed: currentData?.meta?.sourcesFailed || 0,
     llmEnabled: !!config.llm.provider,
     llmProvider: config.llm.provider,
+    sttEnabled: !!sttProvider?.isConfigured,
+    sttProvider: config.stt?.provider || null,
+    geocoderEnabled: isGeocoderConfigured(config.geo),
     telegramEnabled: !!(config.telegram.botToken && config.telegram.chatId),
     refreshIntervalMinutes: config.refreshIntervalMinutes,
     language: currentLanguage,
+    // Fire control room status
+    activeIncidents: trackManager.getActiveTracks().length,
+    totalTracks: trackManager.getAllTracks().length,
+    processedCalls: processedCalls.length,
+    addressStoreSize: addressStore.stats.totalLocations,
   });
 });
 
@@ -545,22 +547,22 @@ async function runSweepCycle() {
     const delta = memory.addRun(synthesized);
     synthesized.delta = delta;
 
-    // 5. LLM-powered trade ideas (LLM-only feature) — isolated so failures don't kill sweep
+    // 5. LLM-powered response strategies — isolated so failures don't kill sweep
     if (llmProvider?.isConfigured) {
       try {
-        console.log('[Crucix] Generating LLM trade ideas...');
+        console.log('[Crucix] Generating LLM response strategies...');
         const previousIdeas = memory.getLastRun()?.ideas || [];
         const llmIdeas = await generateLLMIdeas(llmProvider, synthesized, delta, previousIdeas);
         if (llmIdeas) {
           synthesized.ideas = llmIdeas;
           synthesized.ideasSource = 'llm';
-          console.log(`[Crucix] LLM generated ${llmIdeas.length} ideas`);
+          console.log(`[Crucix] LLM generated ${llmIdeas.length} strategies`);
         } else {
           synthesized.ideas = [];
           synthesized.ideasSource = 'llm-failed';
         }
       } catch (llmErr) {
-        console.error('[Crucix] LLM ideas failed (non-fatal):', llmErr.message);
+        console.error('[Crucix] LLM strategies failed (non-fatal):', llmErr.message);
         synthesized.ideas = [];
         synthesized.ideasSource = 'llm-failed';
       }

@@ -256,205 +256,171 @@ export async function fetchAllNews() {
   return selected.slice(0, 50);
 }
 
-// === Leverageable Ideas from Signals ===
+// === Leverageable Ideas → Fire Response Strategies from Signals ===
 export function generateIdeas(V2) {
   const ideas = [];
-  const vix = V2.fred.find(f => f.id === 'VIXCLS');
-  const hy = V2.fred.find(f => f.id === 'BAMLH0A0HYM2');
-  const spread = V2.fred.find(f => f.id === 'T10Y2Y');
+  const thermal = V2.thermal || [];
+  const totalThermal = thermal.reduce((s, t) => s + (t.det || 0), 0);
+  const weather = V2.weather || {};
+  const fireRisk = V2.fireRisk || {};
+  const e119 = V2.emergency119 || {};
+  const snsFire = V2.snsFire || {};
 
-  if (V2.tg.urgent.length > 3 && V2.energy.wti > 68) {
+  // 1. Thermal + Dry/Windy weather → wildfire dispatch
+  if (totalThermal > 100 && weather.humidity < 30 && weather.windSpeed > 7) {
     ideas.push({
-      title: 'Conflict-Energy Nexus Active',
-      text: `${V2.tg.urgent.length} urgent conflict signals with WTI at $${V2.energy.wti}. Geopolitical risk premium may expand. Consider energy exposure.`,
-      type: 'long', confidence: 'Medium', horizon: 'swing'
-    });
-  }
-  if (vix && vix.value > 20) {
-    ideas.push({
-      title: 'Elevated Volatility Regime',
-      text: `VIX at ${vix.value} — fear premium elevated. Portfolio hedges justified. Short-term equity upside is capped.`,
-      type: 'hedge', confidence: vix.value > 25 ? 'High' : 'Medium', horizon: 'tactical'
-    });
-  }
-  if (vix && vix.value > 20 && hy && hy.value > 3) {
-    ideas.push({
-      title: 'Safe Haven Demand Rising',
-      text: `VIX ${vix.value} + HY spread ${hy.value}% = risk-off building. Gold, treasuries, quality dividends may outperform.`,
-      type: 'hedge', confidence: 'Medium', horizon: 'tactical'
-    });
-  }
-  if (V2.energy.wtiRecent.length > 1) {
-    const latest = V2.energy.wtiRecent[0];
-    const oldest = V2.energy.wtiRecent[V2.energy.wtiRecent.length - 1];
-    const pct = ((latest - oldest) / oldest * 100).toFixed(1);
-    if (Math.abs(pct) > 3) {
-      ideas.push({
-        title: pct > 0 ? 'Oil Momentum Building' : 'Oil Under Pressure',
-        text: `WTI moved ${pct > 0 ? '+' : ''}${pct}% recently to $${V2.energy.wti}/bbl. ${pct > 0 ? 'Energy and commodity names benefit.' : 'Demand concerns may be emerging.'}`,
-        type: pct > 0 ? 'long' : 'watch', confidence: 'Medium', horizon: 'swing'
-      });
-    }
-  }
-  if (spread) {
-    ideas.push({
-      title: spread.value > 0 ? 'Yield Curve Normalizing' : 'Yield Curve Inverted',
-      text: `10Y-2Y spread at ${spread.value.toFixed(2)}. ${spread.value > 0 ? 'Recession signal fading — cyclical rotation possible.' : 'Inversion persists — defensive positioning warranted.'}`,
-      type: 'watch', confidence: 'Medium', horizon: 'strategic'
-    });
-  }
-  const debt = parseFloat(V2.treasury.totalDebt);
-  if (debt > 35e12) {
-    ideas.push({
-      title: 'Fiscal Trajectory Supports Hard Assets',
-      text: `National debt at $${(debt / 1e12).toFixed(1)}T. Long-term gold, bitcoin, and real asset appreciation thesis intact.`,
-      type: 'long', confidence: 'High', horizon: 'strategic'
-    });
-  }
-  const totalThermal = V2.thermal.reduce((s, t) => s + t.det, 0);
-  if (totalThermal > 30000 && V2.tg.urgent.length > 2) {
-    ideas.push({
-      title: 'Satellite Confirms Conflict Intensity',
-      text: `${totalThermal.toLocaleString()} thermal detections + ${V2.tg.urgent.length} urgent OSINT flags. Defense sector procurement may accelerate.`,
-      type: 'watch', confidence: 'Medium', horizon: 'swing'
+      title: '산불 확산 위험',
+      text: `열점 ${totalThermal.toLocaleString()}건 + 습도 ${weather.humidity}% + 풍속 ${weather.windSpeed}m/s. 건조+강풍 조건으로 산불 확산 우려. 소방헬기 선제 배치 권고.`,
+      type: 'DISPATCH', confidence: 'High', horizon: '즉시',
+      resources: ['소방헬기', '산림청 진화대'],
     });
   }
 
-  // Yield Curve + Labor Interaction
-  const unemployment = V2.bls.find(b => b.id === 'LNS14000000' || b.id === 'UNRATE');
-  const payrolls = V2.bls.find(b => b.id === 'CES0000000001' || b.id === 'PAYEMS');
-  if (spread && unemployment && payrolls) {
-    const weakLabor = (unemployment.value > 4.3) || (payrolls.momChange && payrolls.momChange < -50);
-    if (spread.value > 0.3 && weakLabor) {
-      ideas.push({
-        title: 'Steepening Curve Meets Weak Labor',
-        text: `10Y-2Y at ${spread.value.toFixed(2)} + UE ${unemployment.value}%. Curve steepening with deteriorating employment = recession positioning warranted.`,
-        type: 'hedge', confidence: 'High', horizon: 'tactical'
-      });
-    }
-  }
-
-  // ACLED Conflict + Energy Momentum
-  const conflictEvents = V2.acled?.totalEvents || 0;
-  if (conflictEvents > 50 && V2.energy.wtiRecent.length > 1) {
-    const wtiMove = V2.energy.wtiRecent[0] - V2.energy.wtiRecent[V2.energy.wtiRecent.length - 1];
-    if (wtiMove > 2) {
-      ideas.push({
-        title: 'Conflict Fueling Energy Momentum',
-        text: `${conflictEvents} ACLED events this week + WTI up $${wtiMove.toFixed(1)}. Conflict-energy transmission channel active.`,
-        type: 'long', confidence: 'Medium', horizon: 'swing'
-      });
-    }
-  }
-
-  // Defense + Conflict Intensity
-  const totalFatalities = V2.acled?.totalFatalities || 0;
-  const totalThermalAll = V2.thermal.reduce((s, t) => s + t.det, 0);
-  if (totalFatalities > 500 && totalThermalAll > 20000) {
+  // 2. High fire risk index
+  if (fireRisk.summary?.overallRisk === 'HIGH') {
     ideas.push({
-      title: 'Defense Procurement Acceleration Signal',
-      text: `${totalFatalities.toLocaleString()} conflict fatalities + ${totalThermalAll.toLocaleString()} thermal detections. Defense contractors may see accelerated procurement.`,
-      type: 'long', confidence: 'Medium', horizon: 'swing'
+      title: '산불위험지수 경보',
+      text: `산불위험지수 고위험 지역 ${fireRisk.summary.highFireRiskRegions || 0}곳. 예방순찰 강화 및 임산물 소각 금지 조치 권고.`,
+      type: 'MONITOR', confidence: 'High', horizon: '수시간',
     });
   }
 
-  // HY Spread + VIX Divergence
-  if (hy && vix) {
-    const hyWide = hy.value > 3.5;
-    const vixLow = vix.value < 18;
-    const hyTight = hy.value < 2.5;
-    const vixHigh = vix.value > 25;
-    if (hyWide && vixLow) {
-      ideas.push({
-        title: 'Credit Stress Ignored by Equity Vol',
-        text: `HY spread ${hy.value.toFixed(1)}% (wide) but VIX only ${vix.value.toFixed(0)} (complacent). Equity may be underpricing credit deterioration.`,
-        type: 'watch', confidence: 'Medium', horizon: 'tactical'
-      });
-    } else if (hyTight && vixHigh) {
-      ideas.push({
-        title: 'Equity Fear Exceeds Credit Stress',
-        text: `VIX at ${vix.value.toFixed(0)} but HY spread only ${hy.value.toFixed(1)}%. Equity vol may be overshooting — credit markets aren't confirming.`,
-        type: 'watch', confidence: 'Medium', horizon: 'tactical'
-      });
-    }
+  // 3. Multiple 119 calls → confirmed large incident
+  const fireAlerts = e119.summary?.fireRelatedAlerts || 0;
+  if (fireAlerts > 3) {
+    ideas.push({
+      title: '다수 화재 신고',
+      text: `화재 관련 신고 ${fireAlerts}건 접수. 복수 신고는 대형 화재 가능성 시사. 대응 2단계 이상 검토.`,
+      type: 'REINFORCE', confidence: 'High', horizon: '즉시',
+    });
   }
 
-  // Supply Chain + Inflation Pipeline
-  const ppi = V2.bls.find(b => b.id === 'WPUFD49104' || b.id === 'PCU--PCU--');
-  const cpi = V2.bls.find(b => b.id === 'CUUR0000SA0' || b.id === 'CPIAUCSL');
-  if (ppi && cpi && V2.gscpi) {
-    const supplyPressure = V2.gscpi.value > 0.5;
-    const ppiRising = ppi.momChangePct > 0.3;
-    if (supplyPressure && ppiRising) {
-      ideas.push({
-        title: 'Inflation Pipeline Building Pressure',
-        text: `GSCPI at ${V2.gscpi.value.toFixed(2)} (${V2.gscpi.interpretation}) + PPI momentum +${ppi.momChangePct?.toFixed(1)}%. Input costs flowing through — CPI may follow.`,
-        type: 'long', confidence: 'Medium', horizon: 'strategic'
-      });
-    }
+  // 4. Hospital bed shortage
+  const beds = e119.summary?.totalAvailableBeds;
+  if (beds !== undefined && beds < 10) {
+    ideas.push({
+      title: '응급실 병상 부족',
+      text: `가용 응급 병상 ${beds}석. 다수 사상자 발생 시 원거리 이송 필요. 인근 2차 병원 사전 연락 권고.`,
+      type: 'MONITOR', confidence: 'Medium', horizon: '수시간',
+    });
+  }
+
+  // 5. SNS cross-platform fire signals
+  const highConfSns = snsFire.summary?.highConfidenceSignals || 0;
+  if (highConfSns > 0) {
+    ideas.push({
+      title: 'SNS 교차 확인 화재',
+      text: `${highConfSns}건의 고신뢰 SNS 화재 신호 (${snsFire.summary?.activePlatforms || 0}개 플랫폼). 현장 확인 및 출동 준비 권고.`,
+      type: 'DISPATCH', confidence: highConfSns >= 3 ? 'High' : 'Medium', horizon: '즉시',
+    });
+  }
+
+  // 6. Strong wind + thermal → fire spread prediction
+  if (weather.windSpeed > 10 && totalThermal > 50) {
+    ideas.push({
+      title: '화재 확산 벡터 활성',
+      text: `풍속 ${weather.windSpeed}m/s (${weather.windDirection || '알 수 없음'}방향) + 열점 ${totalThermal}건. 풍하측 대피 경로 확보 및 방어선 구축 권고.`,
+      type: 'EVACUATE', confidence: 'Medium', horizon: '즉시',
+      resources: ['대피 안내팀', '방호복'],
+    });
+  }
+
+  // 7. NOAA severe weather + fire conditions
+  const noaaAlerts = V2.noaa?.totalAlerts || 0;
+  if (noaaAlerts > 0 && totalThermal > 30) {
+    ideas.push({
+      title: '기상 경보 + 화재 복합',
+      text: `기상 경보 ${noaaAlerts}건 발효 중 + 열점 ${totalThermal}건. 기상 악화 시 진화 작업 중단 가능성. 교대 인력 확보 권고.`,
+      type: 'REINFORCE', confidence: 'Medium', horizon: '수시간',
+    });
+  }
+
+  // 8. Building fire risk
+  const highRiskBuildings = V2.buildingInfo?.summary?.highRiskBuildings || 0;
+  if (highRiskBuildings > 5) {
+    ideas.push({
+      title: '고위험 건물 집중 지역',
+      text: `고위험 건물 ${highRiskBuildings}동 감지. 노후 건물 밀집 지역 우선 순찰 및 소방시설 점검 권고.`,
+      type: 'MONITOR', confidence: 'Medium', horizon: '일일',
+    });
   }
 
   return ideas.slice(0, 8);
 }
 
-// === Synthesize raw sweep data into dashboard format ===
+// === Synthesize raw sweep data into fire control room dashboard format ===
+// Normalizes all sources into ontology-aware entities for the COP display
 export async function synthesize(data) {
-  const liveAirHotspots = data.sources.OpenSky?.hotspots || [];
-  const airFallback = sumAirHotspots(liveAirHotspots) > 0
-    ? null
-    : loadOpenSkyFallback(data.sources.OpenSky?.timestamp || data.crucix?.timestamp);
-  const effectiveAirHotspots = airFallback?.hotspots || liveAirHotspots;
-  const air = summarizeAirHotspots(effectiveAirHotspots);
+  // === Tier 1: Fire Detection (FIRMS thermal) ===
   const thermal = (data.sources.FIRMS?.hotspots || []).map(h => ({
     region: h.region, det: h.totalDetections || 0, night: h.nightDetections || 0,
     hc: h.highConfidence || 0,
     fires: (h.highIntensity || []).slice(0, 8).map(f => ({ lat: f.lat, lon: f.lon, frp: f.frp || 0 }))
   }));
   const tSignals = data.sources.FIRMS?.signals || [];
-  const chokepoints = Object.values(data.sources.Maritime?.chokepoints || {}).map(c => ({
-    label: c.label || c.name, note: c.note || '', lat: c.lat || 0, lon: c.lon || 0
+  const totalThermal = thermal.reduce((s, t) => s + t.det, 0);
+
+  // === Tier 1: KMA Weather ===
+  const kmaData = data.sources.KMA || {};
+  const weather = {
+    windSpeed: kmaData.stations?.[0]?.windSpeed ?? null,
+    windDirection: kmaData.stations?.[0]?.windDirection ?? null,
+    humidity: kmaData.stations?.[0]?.humidity ?? null,
+    temperature: kmaData.stations?.[0]?.temperature ?? null,
+    precipitation: kmaData.stations?.[0]?.precipitation1h ?? null,
+    fireWeatherRisk: kmaData.fireWeatherRisk ?? null,
+    fireWeatherRiskLabel: kmaData.summary?.fireWeatherRiskLabel ?? null,
+    warnings: kmaData.warnings || [],
+    apiAvailable: kmaData.summary?.apiAvailable || false,
+    stations: kmaData.stations || [],
+  };
+
+  // === Tier 1: Fire Risk Index ===
+  const fireRiskData = data.sources.FireRisk || {};
+  const fireRisk = {
+    disasterAlerts: (fireRiskData.disasterAlerts || []).slice(0, 20),
+    forestFireRisk: fireRiskData.forestFireRisk || {},
+    fireStations: fireRiskData.fireStations || {},
+    summary: fireRiskData.summary || {},
+  };
+
+  // === Tier 1: 119 Emergency ===
+  const e119Data = data.sources.Emergency119 || {};
+  const emergency119 = {
+    incidents: e119Data.incidents || {},
+    waterSupply: e119Data.waterSupply || {},
+    hazmatFacilities: e119Data.hazmatFacilities || {},
+    hospitals: e119Data.hospitals || {},
+    summary: e119Data.summary || {},
+  };
+
+  // === Tier 2: Building & Elevator ===
+  const buildingInfo = data.sources.BuildingInfo || {};
+  const elevatorInfo = data.sources.ElevatorInfo || {};
+
+  // === Tier 3: SNS Fire + Telegram ===
+  const snsFireData = data.sources['SNS-Fire'] || {};
+  const snsFire = {
+    platforms: snsFireData.platforms || {},
+    fusedSignals: (snsFireData.fusedSignals || []).slice(0, 20),
+    summary: snsFireData.summary || {},
+  };
+
+  const tgData = data.sources.Telegram || {};
+  const tgUrgent = (tgData.urgentPosts || []).map(p => ({
+    channel: p.channel, text: p.text?.substring(0, 200), views: p.views, date: p.date, urgentFlags: p.urgentFlags || []
   }));
+  const tgTop = (tgData.topPosts || []).map(p => ({
+    channel: p.channel, text: p.text?.substring(0, 200), views: p.views, date: p.date, urgentFlags: []
+  }));
+
+  // === Tier 4: Environment & Health ===
   const nuke = (data.sources.Safecast?.sites || []).map(s => ({
     site: s.site, anom: s.anomaly || false, cpm: s.avgCPM, n: s.recentReadings || 0
   }));
   const nukeSignals = (data.sources.Safecast?.signals || []).filter(s => s);
-  const sdrData = data.sources.KiwiSDR || {};
-  const sdrNet = sdrData.network || {};
-  const sdrConflict = sdrData.conflictZones || {};
-  const sdrZones = Object.values(sdrConflict).map(z => ({
-    region: z.region, count: z.count || 0,
-    receivers: (z.receivers || []).slice(0, 5).map(r => ({ name: r.name || '', lat: r.lat || 0, lon: r.lon || 0 }))
-  }));
-  const tgData = data.sources.Telegram || {};
-  const tgUrgent = (tgData.urgentPosts || []).filter(p => isEnglish(p.text)).map(p => ({
-    channel: p.channel, text: p.text?.substring(0, 200), views: p.views, date: p.date, urgentFlags: p.urgentFlags || []
-  }));
-  const tgTop = (tgData.topPosts || []).filter(p => isEnglish(p.text)).map(p => ({
-    channel: p.channel, text: p.text?.substring(0, 200), views: p.views, date: p.date, urgentFlags: []
-  }));
   const who = (data.sources.WHO?.diseaseOutbreakNews || []).slice(0, 10).map(w => ({
     title: w.title?.substring(0, 120), date: w.date, summary: w.summary?.substring(0, 150)
-  }));
-  const fred = (data.sources.FRED?.indicators || []).map(f => ({
-    id: f.id, label: f.label, value: f.value, date: f.date,
-    recent: f.recent || [],
-    momChange: f.momChange, momChangePct: f.momChangePct
-  }));
-  const energyData = data.sources.EIA || {};
-  const oilPrices = energyData.oilPrices || {};
-  const wtiRecent = (oilPrices.wti?.recent || []).map(d => d.value);
-  const energy = {
-    wti: oilPrices.wti?.value, brent: oilPrices.brent?.value,
-    natgas: energyData.gasPrice?.value, crudeStocks: energyData.inventories?.crudeStocks?.value,
-    wtiRecent, signals: energyData.signals || []
-  };
-  const bls = data.sources.BLS?.indicators || [];
-  const treasuryData = data.sources.Treasury || {};
-  const debtArr = treasuryData.debt || [];
-  const treasury = { totalDebt: debtArr[0]?.totalDebt || '0', signals: treasuryData.signals || [] };
-  const gscpi = data.sources.GSCPI?.latest || null;
-  const defense = (data.sources.USAspending?.recentDefenseContracts || []).slice(0, 5).map(c => ({
-    recipient: c.recipient?.substring(0, 40), amount: c.amount, desc: c.description?.substring(0, 80)
   }));
   const noaa = {
     totalAlerts: data.sources.NOAA?.totalSevereAlerts || 0,
@@ -463,8 +429,6 @@ export async function synthesize(data) {
       lat: a.lat, lon: a.lon
     }))
   };
-
-  // EPA RadNet — pass through geo-tagged readings
   const epaData = data.sources.EPA || {};
   const epaStations = [];
   const seenEpa = new Set();
@@ -477,129 +441,73 @@ export async function synthesize(data) {
   }
   const epa = { totalReadings: epaData.totalReadings || 0, stations: epaStations.slice(0, 10) };
 
-  // Space/CelesTrak satellite data
-  const spaceData = data.sources.Space || {};
-  // Approximate subsatellite position from TLE orbital elements
-  function estimateSatPosition(sat) {
-    if (!sat?.inclination || !sat?.epoch) return null;
-    const epoch = new Date(sat.epoch);
-    const now = new Date();
-    const elapsed = (now - epoch) / 1000;
-    const period = (sat.period || 92.7) * 60; // minutes to seconds
-    const orbits = elapsed / period;
-    const frac = orbits % 1;
-    const lat = sat.inclination * Math.sin(frac * 2 * Math.PI);
-    const lonShift = (elapsed / 86400) * 360;
-    const orbitLon = frac * 360;
-    const lon = ((orbitLon - lonShift) % 360 + 540) % 360 - 180;
-    return { lat: +lat.toFixed(2), lon: +lon.toFixed(2), name: sat.name };
-  }
-  const issPos = estimateSatPosition(spaceData.iss);
-  const spaceStations = (spaceData.spaceStations || []).map(s => estimateSatPosition(s)).filter(Boolean);
-  const space = {
-    totalNewObjects: spaceData.totalNewObjects || 0,
-    militarySats: spaceData.militarySatellites || 0,
-    militaryByCountry: spaceData.militaryByCountry || {},
-    constellations: spaceData.constellations || {},
-    iss: spaceData.iss || null,
-    issPosition: issPos,
-    stationPositions: spaceStations.slice(0, 5),
-    recentLaunches: (spaceData.recentLaunches || []).slice(0, 10).map(l => ({
-      name: l.name, country: l.country, epoch: l.epoch,
-      apogee: l.apogee, perigee: l.perigee, type: l.objectType
-    })),
-    launchByCountry: spaceData.launchByCountry || {},
-    signals: spaceData.signals || [],
-  };
-
-  // ACLED conflict events
-  const acledData = data.sources.ACLED || {};
-  const acled = acledData.error ? { totalEvents: 0, totalFatalities: 0, byRegion: {}, byType: {}, deadliestEvents: [] } : {
-    totalEvents: acledData.totalEvents || 0,
-    totalFatalities: acledData.totalFatalities || 0,
-    byRegion: acledData.byRegion || {},
-    byType: acledData.byType || {},
-    deadliestEvents: (acledData.deadliestEvents || []).slice(0, 15).map(e => ({
-      date: e.date, type: e.type, country: e.country, location: e.location,
-      fatalities: e.fatalities || 0, lat: e.lat || null, lon: e.lon || null
-    }))
-  };
-
-  // GDELT news articles + geo events
+  // === Tier 5: GDELT News ===
   const gdeltData = data.sources.GDELT || {};
   const gdelt = {
     totalArticles: gdeltData.totalArticles || 0,
-    conflicts: (gdeltData.conflicts || []).length,
-    economy: (gdeltData.economy || []).length,
-    health: (gdeltData.health || []).length,
-    crisis: (gdeltData.crisis || []).length,
     topTitles: (gdeltData.allArticles || []).slice(0, 5).map(a => a.title?.substring(0, 80)),
     geoPoints: (gdeltData.geoPoints || []).slice(0, 20).map(p => ({
       lat: p.lat, lon: p.lon, name: (p.name || '').substring(0, 80), count: p.count || 1
     }))
   };
 
-  const health = Object.entries(data.sources).map(([name, src]) => ({
-    n: name, err: Boolean(src.error), stale: Boolean(src.stale)
+  // === Source Health ===
+  const health = Object.entries(data.sources || {}).map(([name, src]) => ({
+    n: name, err: Boolean(src?.error), stale: Boolean(src?.stale)
   }));
 
-  // === Yahoo Finance live market data ===
-  const yfData = data.sources.YFinance || {};
-  const yfQuotes = yfData.quotes || {};
-  const markets = {
-    indexes: (yfData.indexes || []).map(q => ({
-      symbol: q.symbol, name: q.name, price: q.price,
-      change: q.change, changePct: q.changePct, history: q.history || []
-    })),
-    rates: (yfData.rates || []).map(q => ({
-      symbol: q.symbol, name: q.name, price: q.price,
-      change: q.change, changePct: q.changePct
-    })),
-    commodities: (yfData.commodities || []).map(q => ({
-      symbol: q.symbol, name: q.name, price: q.price,
-      change: q.change, changePct: q.changePct, history: q.history || []
-    })),
-    crypto: (yfData.crypto || []).map(q => ({
-      symbol: q.symbol, name: q.name, price: q.price,
-      change: q.change, changePct: q.changePct
-    })),
-    vix: yfQuotes['^VIX'] ? {
-      value: yfQuotes['^VIX'].price,
-      change: yfQuotes['^VIX'].change,
-      changePct: yfQuotes['^VIX'].changePct,
-    } : null,
-    timestamp: yfData.summary?.timestamp || null,
-  };
+  // === Hydrants / Hazmat / Hospitals as map entities ===
+  const hydrants = (e119Data.waterSupply?.hydrants || []).filter(h => h.lat && h.lon).slice(0, 100);
+  const hazmatFacilities = (e119Data.hazmatFacilities?.facilities || []).filter(f => f.lat && f.lon).slice(0, 50);
+  const hospitals = (e119Data.hospitals?.hospitals || []).filter(h => h.lat && h.lon).slice(0, 30);
+  const fireStationsList = (fireRiskData.fireStations?.stations || []).filter(s => s.lat && s.lon).slice(0, 50);
 
-  // Override stale EIA prices with live Yahoo Finance data if available
-  const yfWti = yfQuotes['CL=F'];
-  const yfBrent = yfQuotes['BZ=F'];
-  const yfNatgas = yfQuotes['NG=F'];
-  if (yfWti?.price) energy.wti = yfWti.price;
-  if (yfBrent?.price) energy.brent = yfBrent.price;
-  if (yfNatgas?.price) energy.natgas = yfNatgas.price;
-  if (yfWti?.history?.length) energy.wtiRecent = yfWti.history.map(h => h.close);
+  // === Backward compatibility: provide stub fields the dashboard JS expects ===
+  const air = [];
+  const fred = [];
+  const energy = { wti: null, brent: null, natgas: null, wtiRecent: [], signals: [] };
+  const bls = [];
+  const treasury = { totalDebt: '0', signals: [] };
+  const gscpi = null;
+  const acled = { totalEvents: 0, totalFatalities: 0, byRegion: {}, byType: {}, deadliestEvents: [] };
+  const space = { totalNewObjects: 0, recentLaunches: [], signals: [] };
+  const markets = { indexes: [], rates: [], commodities: [], crypto: [], vix: null, timestamp: null };
 
-  // Fetch RSS
+  // Fetch RSS (fire/disaster focused)
   const news = await fetchAllNews();
 
+  // === Build synthesized output (COP data) ===
   const V2 = {
-    meta: data.crucix, air, thermal, tSignals, chokepoints, nuke, nukeSignals,
-    airMeta: {
-      fallback: Boolean(airFallback),
-      liveTotal: sumAirHotspots(liveAirHotspots),
-      timestamp: airFallback?.timestamp || data.sources.OpenSky?.timestamp || data.crucix?.timestamp || null,
-      source: airFallback ? 'OpenSky fallback' : 'OpenSky',
-      ...(airFallback ? { fallbackFile: airFallback.file } : {}),
-      ...(data.sources.OpenSky?.error ? { error: data.sources.OpenSky.error } : {}),
-    },
-    sdr: { total: sdrNet.totalReceivers || 0, online: sdrNet.online || 0, zones: sdrZones },
+    meta: data.crucix,
+    // Fire-specific data
+    thermal, tSignals, totalThermal,
+    weather,
+    fireRisk,
+    emergency119,
+    snsFire,
+    buildingInfo: { summary: buildingInfo.summary || {} },
+    elevatorInfo: { summary: elevatorInfo.summary || {} },
+    // Map entities (for COP overlay)
+    hydrants,
+    hazmatFacilities,
+    hospitals,
+    fireStations: fireStationsList,
+    // Environment
+    nuke, nukeSignals, noaa, epa, who,
+    // News & OSINT
     tg: { posts: tgData.totalPosts || 0, urgent: tgUrgent, topPosts: tgTop },
-    who, fred, energy, bls, treasury, gscpi, defense, noaa, epa, acled, gdelt, space, health, news,
-    markets, // Live Yahoo Finance market data
+    gdelt,
+    // Backward-compatible stubs (dashboard JS references these)
+    air, fred, energy, bls, treasury, gscpi, acled, space, markets,
+    chokepoints: [], sdr: { total: 0, online: 0, zones: [] }, defense: [],
+    airMeta: { fallback: false, liveTotal: 0, timestamp: data.crucix?.timestamp, source: 'N/A' },
+    // Output
+    health, news,
     ideas: [], ideasSource: 'disabled',
-    // newsFeed for ticker (merged RSS + GDELT + Telegram)
     newsFeed: buildNewsFeed(news, gdeltData, tgUrgent, tgTop),
+    // Ontology (populated by server.mjs after synthesis)
+    incidents: null,
+    processedCalls: null,
   };
 
   return V2;
