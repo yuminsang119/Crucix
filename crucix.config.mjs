@@ -27,18 +27,29 @@ export default {
     webhookUrl: process.env.DISCORD_WEBHOOK_URL || null, // Fallback: webhook-only alerts (no bot needed)
   },
 
-  // Delta engine thresholds — override defaults from lib/delta/engine.mjs
-  // Set to null to use built-in defaults
+  // Ontology engine settings (Palantir/Anduril pattern)
+  ontology: {
+    autoEscalateMinutes: parseInt(process.env.AUTO_ESCALATE_MINUTES) || 10,
+    fusionConfidenceThreshold: parseFloat(process.env.FUSION_CONFIDENCE_THRESHOLD) || 0.6,
+    maxTrackAgeMinutes: parseInt(process.env.MAX_TRACK_AGE_MINUTES) || 480,
+    spreadPredictionEnabled: process.env.SPREAD_PREDICTION !== 'false',
+  },
+
+  // Delta engine thresholds — fire control room specific
   delta: {
     thresholds: {
       numeric: {
-        // Example overrides (uncomment to customize):
-        // vix: 3,       // more sensitive to VIX moves
-        // wti: 5,       // less sensitive to oil moves
+        wind_speed: 10,        // 풍속 10m/s 변화 시 알림
+        humidity: -15,          // 습도 15% 하락 시 알림
+        temperature: 5,         // 기온 5°C 상승 시 알림
+        fire_risk_index: 20,    // 산불위험지수 20점 변화
       },
       count: {
-        // urgent_posts: 3,     // need ±3 urgent posts to flag
-        // thermal_total: 1000, // need ±1000 thermal detections
+        active_fires: 1,        // 새 화재 1건 → 즉시 알림
+        thermal_total: 50,      // 열점 50개 이상 변화
+        dispatched_units: 3,    // 출동 차량 3대 이상 변화
+        available_beds: -5,     // 가용 병상 5석 이상 감소
+        sns_high_confidence: 1, // 고신뢰 SNS 신호 1건 → 즉시 알림
       },
     },
   },

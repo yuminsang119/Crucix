@@ -5,9 +5,9 @@
     "nativeName": "English"
   },
   "dashboard": {
-    "title": "CRUCIX — Intelligence Terminal",
-    "bootTitle": "CRUCIX INTELLIGENCE ENGINE",
-    "bootSubtitle": "Local Palantir · 31 Sources",
+    "title": "CRUCIX — Fire Control Room",
+    "bootTitle": "CRUCIX FIRE CONTROL ENGINE",
+    "bootSubtitle": "Fire Intelligence · 16 Sources",
     "waitingForSweep": "Waiting for first sweep...",
     "sourcesOk": "Sources OK",
     "lastSweep": "Last sweep",
@@ -26,37 +26,37 @@
     "guideBtn": "What Signals Mean"
   },
   "boot": {
-    "initializing": "INITIALIZING CRUCIX ENGINE v2.1.0",
-    "connecting": "CONNECTING {count} OSINT SOURCES...",
-    "sourceGroup1": "OPENSKY · FIRMS · KIWISDR · MARITIME",
-    "sourceGroup2": "FRED · BLS · EIA · TREASURY · GSCPI",
-    "sourceGroup3": "TELEGRAM · SAFECAST · EPA · WHO · OFAC",
-    "sourceGroup4": "GDELT · NOAA · PATENTS · BLUESKY · REDDIT",
-    "sourceGroup5": "USGS · ECB · CVE · COPERNICUS · CELESTRAK",
+    "initializing": "INITIALIZING CRUCIX FIRE ENGINE v3.0.0",
+    "connecting": "CONNECTING {count} FIRE SOURCES...",
+    "sourceGroup1": "FIRMS · KMA · FIRE-RISK · EMERGENCY-119",
+    "sourceGroup2": "BUILDING-INFO · ELEVATOR · SNS-FIRE",
+    "sourceGroup3": "TELEGRAM · SAFECAST · EPA · WHO · RELIEFWEB",
+    "sourceGroup4": "GDELT · NOAA · CISA-KEV · CLOUDFLARE",
+    "sourceGroup5": "ONTOLOGY · FUSION · TRACKER · SIMULATION",
     "sweepComplete": "SWEEP COMPLETE — {ok}/{total} SOURCES",
     "ok": "OK",
-    "acledLayer": "ACLED CONFLICT LAYER",
-    "events": "EVENTS",
+    "acledLayer": "FIRE INCIDENT LAYER",
+    "events": "INCIDENTS",
     "degraded": "DEGRADED",
-    "flightCorridors": "FLIGHT CORRIDORS",
+    "flightCorridors": "DISPATCH ROUTES",
     "active": "ACTIVE",
     "dualProjection": "DUAL PROJECTION",
     "ready": "READY",
-    "intelligenceSynthesis": "INTELLIGENCE SYNTHESIS"
+    "intelligenceSynthesis": "INCIDENT ANALYSIS"
   },
   "panels": {
     "sensorGrid": "Sensor Grid",
-    "tradeIdeas": "Leverageable Ideas",
-    "osintFeed": "OSINT Feed",
-    "osintStream": "OSINT Stream",
-    "nuclearWatch": "Nuclear Watch",
-    "newsTicker": "Live News Ticker",
+    "tradeIdeas": "Response Strategies",
+    "osintFeed": "Disaster Feed",
+    "osintStream": "Disaster Stream",
+    "nuclearWatch": "Hazmat Watch",
+    "newsTicker": "Live Incident Ticker",
     "sweepDelta": "Sweep Delta",
-    "macroMarkets": "Macro + Markets",
-    "healthAlerts": "Health Alerts",
+    "macroMarkets": "Weather Status",
+    "healthAlerts": "Casualty Status",
     "riskGauges": "Risk Gauges",
     "crossSourceSignals": "Cross-Source Signals",
-    "signalCore": "Signal Core",
+    "signalCore": "Incident Core",
     "seismicWatch": "Seismic Watch",
     "cyberWatch": "Cyber Watch",
     "spaceWatch": "Space Watch",
@@ -64,15 +64,15 @@
     "ecbIndicators": "ECB Indicators"
   },
   "layers": {
-    "airActivity": "Air Activity",
-    "thermalSpikes": "Thermal Spikes",
-    "sdrCoverage": "SDR Coverage",
-    "maritimeWatch": "Maritime Watch",
-    "nuclearSites": "Nuclear Sites",
-    "conflictEvents": "Conflict Events",
-    "healthWatch": "Health Watch",
-    "worldNews": "World News",
-    "osintFeed": "OSINT Feed",
+    "airActivity": "Fire Helicopters",
+    "thermalSpikes": "Thermal/Fire Detection",
+    "sdrCoverage": "Radio Coverage",
+    "maritimeWatch": "Water Supply",
+    "nuclearSites": "Hazmat Sites",
+    "conflictEvents": "Fire Incidents",
+    "healthWatch": "Casualty Watch",
+    "worldNews": "Disaster News",
+    "osintFeed": "Disaster Feed",
     "theaters": "theaters",
     "nightDet": "night det.",
     "online": "online",
@@ -120,8 +120,8 @@
     "llmOff": "LLM OFF",
     "pending": "PENDING",
     "llmNotConfigured": "LLM NOT CONFIGURED",
-    "llmHelp": "Set LLM_PROVIDER + credentials in .env to enable AI-powered trade ideas",
-    "disclosure": "FOR INFORMATIONAL PURPOSES ONLY. This is not financial advice, a recommendation to buy or sell any security, or a solicitation of any kind. All signal-based observations are derived from publicly available OSINT data and should not be relied upon for investment decisions. Consult a licensed financial advisor before making any investment. Past performance does not guarantee future results."
+    "llmHelp": "Set LLM_PROVIDER + credentials in .env to enable AI-powered response strategies",
+    "disclosure": "FOR OPERATIONAL REFERENCE ONLY. AI-generated response strategies are advisory — final decisions rest with the incident commander. All data is derived from public sources and may have latency. Verify critical information through official channels before acting."
   },
   "regions": {
     "world": "World",
@@ -297,15 +297,15 @@
     "tiers": {
       "flash": {
         "label": "FLASH",
-        "description": "Immediate action required — market-moving, time-critical"
+        "description": "Immediate action — major fire, mass casualties, explosion"
       },
       "priority": {
         "label": "PRIORITY",
-        "description": "Important signal cluster — act within hours"
+        "description": "Important — fire spreading, resources low, severe weather"
       },
       "routine": {
         "label": "ROUTINE",
-        "description": "Noteworthy change — FYI, no urgency"
+        "description": "Informational — minor fire, contained, weather change"
       }
     },
     "confidence": {
@@ -349,7 +349,7 @@
     }
   },
   "llm": {
-    "systemPrompt": "You are a quantitative analyst at a macro intelligence firm. You receive structured OSINT + economic data from 25 sources and produce 5-8 actionable trade ideas.\n\nRules:\n- Each idea must cite specific data points from the input\n- Include entry rationale, risk factors, and time horizon\n- Blend geopolitical, economic, and market signals — cross-correlate across domains\n- Be specific: name instruments (tickers, futures, ETFs), not vague sectors\n- If delta shows significant changes, lead with those\n- Do NOT repeat ideas from the \"previous ideas\" list unless conditions have materially changed\n- Rate confidence: HIGH (multiple confirming signals), MEDIUM (thesis supported), LOW (speculative)\n\nOutput ONLY valid JSON array. Each object:\n{\n  \"title\": \"Short title (max 10 words)\",\n  \"type\": \"LONG|SHORT|HEDGE|WATCH|AVOID\",\n  \"ticker\": \"Primary instrument\",\n  \"confidence\": \"HIGH|MEDIUM|LOW\",\n  \"rationale\": \"2-3 sentence explanation citing specific data\",\n  \"risk\": \"Key risk factor\",\n  \"horizon\": \"Intraday|Days|Weeks|Months\",\n  \"signals\": [\"signal1\", \"signal2\"]\n}"
+    "systemPrompt": "You are a fire control room AI analyst. You receive structured data from 16 sources including satellite fire detection, weather, 119 dispatch, building info, SNS reports, and produce 5-8 actionable response strategies.\n\nRules:\n- Each strategy must cite specific data points from the input\n- Include dispatch rationale, risk factors, and response timeline\n- Cross-correlate weather, fire detection, building info, and SNS signals\n- Be specific: name unit types (pumper, ladder, ambulance), quantities, and target locations\n- If delta shows significant changes (new fires, wind shift), lead with those\n- Rate confidence: HIGH (multiple confirming sources), MEDIUM (single source confirmed), LOW (unverified)\n\nOutput ONLY valid JSON array. Each object:\n{\n  \"title\": \"Short title (max 15 chars)\",\n  \"type\": \"DISPATCH|EVACUATE|REINFORCE|MONITOR|STANDBY\",\n  \"target\": \"Target location/building\",\n  \"confidence\": \"HIGH|MEDIUM|LOW\",\n  \"rationale\": \"2-3 sentence explanation citing specific data\",\n  \"risk\": \"Key risk factor\",\n  \"horizon\": \"Immediate|1Hour|Hours|Daily\",\n  \"signals\": [\"signal1\", \"signal2\"],\n  \"resources\": [\"Pumper x2\", \"Ambulance x1\"]\n}"
   },
   "api": {
     "errors": {
