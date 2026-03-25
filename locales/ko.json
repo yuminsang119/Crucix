@@ -63,7 +63,9 @@
     "europeAlerts": "유럽 경보",
     "ecbIndicators": "ECB 지표",
     "koreaDisaster": "한국 재난 현황",
-    "socialMedia": "소셜 미디어 모니터링"
+    "socialMedia": "소셜 미디어 모니터링",
+    "koreaAirQuality": "미세먼지/대기질",
+    "koreaRadiation": "방사선 선량 감시"
   },
   "layers": {
     "airActivity": "항공 활동",
@@ -90,7 +92,9 @@
     "europeEmergency": "유럽 비상",
     "koreaDisaster": "한국 재난",
     "koreaFire": "한국 화재/산불",
-    "socialMedia": "소셜 미디어"
+    "socialMedia": "소셜 미디어",
+    "koreaAirQuality": "미세먼지",
+    "koreaRadiation": "방사선 선량"
   },
   "map": {
     "worldNews": "세계 뉴스",
@@ -258,7 +262,22 @@
     "threads": "Threads",
     "instagram": "Instagram",
     "totalPosts": "총 게시물",
-    "urgentPosts": "긴급 게시물"
+    "urgentPosts": "긴급 게시물",
+    "airQuality": "대기질",
+    "pm25": "초미세먼지 (PM2.5)",
+    "pm10": "미세먼지 (PM10)",
+    "good": "좋음",
+    "moderate": "보통",
+    "unhealthy": "나쁨",
+    "hazardous": "매우 나쁨",
+    "nationalAvg": "전국 평균",
+    "radiation": "방사선 선량",
+    "nppStatus": "원전 현황",
+    "allNormal": "전 원전 정상",
+    "anomalyDetected": "이상 감지",
+    "usvh": "µSv/h",
+    "cpm": "CPM",
+    "nkFacility": "북한 핵시설"
   },
   "time": {
     "justNow": "방금",
