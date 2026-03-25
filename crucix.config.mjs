@@ -27,6 +27,22 @@ export default {
     webhookUrl: process.env.DISCORD_WEBHOOK_URL || null, // Fallback: webhook-only alerts (no bot needed)
   },
 
+  // STT (Speech-to-Text) for 119 call processing
+  stt: {
+    provider: process.env.STT_PROVIDER || null, // openai | ollama
+    apiKey: process.env.STT_API_KEY || process.env.LLM_API_KEY || null,
+    model: process.env.STT_MODEL || null, // default: whisper-1 (openai), whisper:large-v3 (ollama)
+    baseUrl: process.env.OLLAMA_BASE_URL || null,
+  },
+
+  // Geocoding for address → coordinates
+  geo: {
+    kakaoApiKey: process.env.KAKAO_REST_API_KEY || null,
+    vworldApiKey: process.env.VWORLD_API_KEY || null,
+    naverMapClientId: process.env.NAVER_MAP_CLIENT_ID || null,
+    naverMapClientSecret: process.env.NAVER_MAP_CLIENT_SECRET || null,
+  },
+
   // Ontology engine settings (Palantir/Anduril pattern)
   ontology: {
     autoEscalateMinutes: parseInt(process.env.AUTO_ESCALATE_MINUTES) || 10,
