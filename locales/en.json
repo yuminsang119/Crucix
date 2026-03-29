@@ -61,7 +61,11 @@
     "cyberWatch": "Cyber Watch",
     "spaceWatch": "Space Watch",
     "europeAlerts": "Europe Alerts",
-    "ecbIndicators": "ECB Indicators"
+    "ecbIndicators": "ECB Indicators",
+    "koreaDisaster": "Korea Disaster",
+    "socialMedia": "Social Media",
+    "koreaAirQuality": "Korea Air Quality",
+    "koreaRadiation": "Korea Radiation"
   },
   "layers": {
     "airActivity": "Air Activity",
@@ -85,7 +89,12 @@
     "seismicEvents": "Seismic Events",
     "cyberVulns": "Cyber Vulnerabilities",
     "spaceActivity": "Space Activity",
-    "europeEmergency": "Europe Emergency"
+    "europeEmergency": "Europe Emergency",
+    "koreaDisaster": "Korea Disaster",
+    "koreaFire": "Korea Fire/Wildfire",
+    "socialMedia": "Social Media",
+    "koreaAirQuality": "Air Quality (PM)",
+    "koreaRadiation": "Radiation Dose"
   },
   "map": {
     "worldNews": "World News",
@@ -129,7 +138,8 @@
     "europe": "Europe",
     "middleEast": "Middle East",
     "asiaPacific": "Asia Pacific",
-    "africa": "Africa"
+    "africa": "Africa",
+    "korea": "Korea"
   },
   "badges": {
     "radiation": "RADIATION",

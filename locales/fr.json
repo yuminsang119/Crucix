@@ -61,7 +61,11 @@
     "cyberWatch": "Surveillance Cyber",
     "spaceWatch": "Surveillance Spatiale",
     "europeAlerts": "Alertes Europe",
-    "ecbIndicators": "Indicateurs BCE"
+    "ecbIndicators": "Indicateurs BCE",
+    "koreaDisaster": "Catastrophe Corée",
+    "socialMedia": "Réseaux Sociaux",
+    "koreaAirQuality": "Qualité de l'Air Corée",
+    "koreaRadiation": "Radiation Corée"
   },
   "layers": {
     "airActivity": "Activité Aérienne",
@@ -85,7 +89,12 @@
     "seismicEvents": "Événements Sismiques",
     "cyberVulns": "Vulnérabilités Cyber",
     "spaceActivity": "Activité Spatiale",
-    "europeEmergency": "Urgences Europe"
+    "europeEmergency": "Urgences Europe",
+    "koreaDisaster": "Catastrophe Corée",
+    "koreaFire": "Incendie/Feu Corée",
+    "socialMedia": "Réseaux Sociaux",
+    "koreaAirQuality": "Qualité de l'Air (PM)",
+    "koreaRadiation": "Dose de Radiation"
   },
   "map": {
     "worldNews": "Actualités",
@@ -129,7 +138,8 @@
     "europe": "Europe",
     "middleEast": "Moyen-Orient",
     "asiaPacific": "Asie-Pacifique",
-    "africa": "Afrique"
+    "africa": "Afrique",
+    "korea": "Corée"
   },
   "badges": {
     "radiation": "RADIATION",

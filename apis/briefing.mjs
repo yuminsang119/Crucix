@@ -47,6 +47,12 @@ import { briefing as yfinance } from './sources/yfinance.mjs';
 import { briefing as cisaKev } from './sources/cisa-kev.mjs';
 import { briefing as cloudflareRadar } from './sources/cloudflare-radar.mjs';
 
+// === Tier 7: Korea Intelligence ===
+import { briefing as koreaDisaster } from './sources/korea-disaster.mjs';
+import { briefing as socialMedia } from './sources/social-media.mjs';
+import { briefing as koreaAirQuality } from './sources/korea-airquality.mjs';
+import { briefing as koreaRadiation } from './sources/korea-radiation.mjs';
+
 const SOURCE_TIMEOUT_MS = 30_000; // 30s max per individual source
 
 export async function runSource(name, fn, ...args) {
@@ -67,7 +73,7 @@ export async function runSource(name, fn, ...args) {
 }
 
 export async function fullBriefing() {
-  console.error('[Crucix] Starting intelligence sweep — 29 sources...');
+  console.error('[Crucix] Starting intelligence sweep — 33 sources...');
   const start = Date.now();
 
   const allPromises = [
@@ -111,6 +117,12 @@ export async function fullBriefing() {
     // Tier 6: Cyber & Infrastructure
     runSource('CISA-KEV', cisaKev),
     runSource('Cloudflare-Radar', cloudflareRadar),
+
+    // Tier 7: Korea Intelligence
+    runSource('Korea-Disaster', koreaDisaster),
+    runSource('Social-Media', socialMedia),
+    runSource('Korea-AirQuality', koreaAirQuality),
+    runSource('Korea-Radiation', koreaRadiation),
   ];
 
   // Each runSource has its own 30s timeout, so allSettled will resolve
